@@ -144,4 +144,98 @@ contract Create {
     }
 
     // -----Voter Section ------- //
+
+    function voterRight(
+        address _address,
+        string memory _name,
+        string memory _image,
+        string memory _ipfs
+    ) public {
+        require((votingOrganizer == msg.sender), "You are not the organizer");
+
+        _voterId.increment();
+
+        uint256 idNumber = _voterId.current();
+
+        Voter storage voter = voters[_address];
+
+        require(voter.voter_allowed == 0);
+
+        voter.voter_allowed = 1;
+        voter.voter_image = _image;
+        voter.voter_name = _name;
+        voter.voter_address = _address;
+        voter.voter_ipfs = _ipfs;
+        voter.voter_voterId = idNumber;
+        voter.voter_vote = 1000;
+        voter.voter_voted = false;
+
+        votersAddress.push(_address);
+
+        emit VoterCreated(
+            idNumber,
+            _name,
+            _image,
+            _address,
+            voter.voter_allowed,
+            voter.voter_voted,
+            voter.voter_vote,
+            _ipfs
+        );
+    }
+
+    function vote(address _candidateAddress, uint256 _candidateVoteId)
+        external
+    {
+        Voter storage voter = voters[msg.sender];
+
+        require(!voter.voter_voted, "You have already voted");
+        require(voter.voter_allowed != 0, "You are not allowed to vote");
+
+        voter.voter_voted = true;
+        voter.voter_vote = _candidateVoteId;
+
+        votedVoters.push(msg.sender);
+
+        candidates[_candidateAddress].voteCount += voter.voter_allowed;
+    }
+
+    function getVoterLength() public view returns (uint256) {
+        return votersAddress.length;
+    }
+
+    function getVotersData(address _address)
+        public
+        view
+        returns (
+            uint256,
+            string memory,
+            string memory,
+            address,
+            uint256,
+            bool,
+            uint256,
+            string memory
+        )
+    {
+        Voter memory voter = voters[_address];
+        return (
+            voter.voter_voterId,
+            voter.voter_name,
+            voter.voter_image,
+            voter.voter_address,
+            voter.voter_allowed,
+            voter.voter_voted,
+            voter.voter_vote,
+            voter.voter_ipfs
+        );
+    }
+
+    function getVotedVoterList() public view returns (address[] memory) {
+        return votedVoters;
+    }
+
+    function getVoterList() public view returns (address[] memory) {
+        return votersAddress;
+    }
 }
