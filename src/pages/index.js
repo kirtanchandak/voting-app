@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
+import { VotingContext } from "context/Voter";
 
 const HOME = () => {
-  return <div>index</div>;
+  const { votingTitle } = useContext(VotingContext);
+  return <div>{votingTitle}</div>;
 };
 
 export default HOME;
